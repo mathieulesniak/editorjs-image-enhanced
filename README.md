@@ -28,13 +28,13 @@ This Tool is also capable of uploading & displaying video files using the <video
 Get the package
 
 ```shell
-npm i --save-dev @editorjs/image
+npm i --save-dev editorjs-image-enhanced
 ```
 
 Include module at your application
 
 ```javascript
-import ImageTool from '@editorjs/image';
+import ImageTool from 'editorjs-image-enhanced';
 ```
 
 ### Other methods
@@ -44,20 +44,12 @@ import ImageTool from '@editorjs/image';
 1. Upload folder `dist` from repository
 2. Add `dist/bundle.js` file to your page.
 
-#### Loading from CDN
-
-You can load a specific version of package from [jsDelivr CDN](https://www.jsdelivr.com/package/npm/@editorjs/image).
-
-`https://cdn.jsdelivr.net/npm/@editorjs/image@2.3.0`
-
-Then require this script on page with Editor.js through the `<script src=""></script>` tag.
-
 ## Usage
 
 Add a new Tool to the `tools` property of the Editor.js initial config.
 
 ```javascript
-import ImageTool from '@editorjs/image';
+import ImageTool from 'editorjs-image-enhanced';
 
 // or if you inject ImageTool via standalone script
 const ImageTool = window.ImageTool;
@@ -241,7 +233,7 @@ Both methods must return a Promise that resolves with response in a format that 
 Example:
 
 ```js
-import ImageTool from '@editorjs/image';
+import ImageTool from 'editorjs-image-enhanced';
 
 var editor = EditorJS({
   ...
