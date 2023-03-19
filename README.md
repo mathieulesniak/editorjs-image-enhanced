@@ -1,6 +1,5 @@
-![](https://badgen.net/badge/Editor.js/v2.0/blue)
 
-# Image Tool
+# Image Tool Enhanced
 
 Image Block for the [Editor.js](https://editorjs.io).
 
@@ -95,6 +94,7 @@ Image Tool supports these configuration parameters:
 | additionalRequestData | `object` | Object with any data you want to send with uploading requests |
 | additionalRequestHeaders | `object` | Object with any custom headers which will be added to request. [See example](https://github.com/codex-team/ajax/blob/e5bc2a2391a18574c88b7ecd6508c29974c3e27f/README.md#headers-object) |
 | captionPlaceholder | `string` | (default: `Caption`) Placeholder for Caption input |
+| altPlaceholder | `string` | (default: `Alt`) Placeholder for Alt input |
 | buttonContent | `string` | Allows to override HTML content of «Select file» button |
 | uploader | `{{uploadByFile: function, uploadByUrl: function}}` | Optional custom uploading methods. See details below. |
 | actions | `array` | Array with custom actions to show in the tool's settings menu. See details below. |
@@ -136,6 +136,7 @@ This Tool returns `data` with following format
 | -------------- | --------- | ------------------------------- |
 | file           | `object`  | Uploaded file data. Any data got from backend uploader. Always contain the `url` property |
 | caption        | `string`  | image's caption                 |
+| alt            | `string`  | image's alt                     |
 | withBorder     | `boolean` | add border to image             |
 | withBackground | `boolean` | need to add background          |
 | stretched      | `boolean` | stretch image to screen's width |
@@ -149,6 +150,7 @@ This Tool returns `data` with following format
             "url" : "https://www.tesla.com/tesla_theme/assets/img/_vehicle_redesign/roadster_and_semi/roadster/hero.jpg"
         },
         "caption" : "Roadster // tesla.com",
+        "alt": "This is a Tesla car",
         "withBorder" : false,
         "withBackground" : false,
         "stretched" : true

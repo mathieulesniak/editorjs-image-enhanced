@@ -26,9 +26,14 @@ export default class Ui {
       fileButton: this.createFileButton(),
       imageEl: undefined,
       imagePreloader: make('div', this.CSS.imagePreloader),
+      captionAltWrapper: make('div', [this.CSS.captionAltWrapper]),
+      captionAltToggler: this.createCaptionAltToggler(),
       caption: make('div', [this.CSS.input, this.CSS.caption], {
         contentEditable: !this.readOnly,
       }),
+      alt: make('div', [this.CSS.input, this.CSS.alt], {
+        contentEditable: true
+      })
     };
 
     /**
@@ -37,14 +42,22 @@ export default class Ui {
      *    <image-container>
      *      <image-preloader />
      *    </image-container>
-     *    <caption />
+     *    <caption-alt-wrapper>
+     *      <caption />
+     *      <alt />
+     *      <caption-alt-toggler />
+     *    </caption-alt-wrapper>
      *    <select-file-button />
      *  </wrapper>
      */
     this.nodes.caption.dataset.placeholder = this.config.captionPlaceholder;
+    this.nodes.alt.dataset.placeholder = this.config.altPlaceholder;
     this.nodes.imageContainer.appendChild(this.nodes.imagePreloader);
     this.nodes.wrapper.appendChild(this.nodes.imageContainer);
-    this.nodes.wrapper.appendChild(this.nodes.caption);
+    this.nodes.wrapper.appendChild(this.nodes.captionAltWrapper);
+    this.nodes.captionAltWrapper.appendChild(this.nodes.caption);
+    this.nodes.captionAltWrapper.appendChild(this.nodes.alt);
+    this.nodes.captionAltWrapper.appendChild(this.nodes.captionAltToggler);
     this.nodes.wrapper.appendChild(this.nodes.fileButton);
   }
 
@@ -67,7 +80,10 @@ export default class Ui {
       imageContainer: 'image-tool__image',
       imagePreloader: 'image-tool__image-preloader',
       imageEl: 'image-tool__image-picture',
-      caption: 'image-tool__caption',
+      captionAltWrapper: 'image-tool__wrapper',
+      caption: 'image-tool__wrapper-caption',
+      alt: 'image-tool__wrapper-alt',
+      toggler: 'image-tool__wrapper-toggler'
     };
   };
 
@@ -118,6 +134,20 @@ export default class Ui {
     });
 
     return button;
+  }
+
+  createCaptionAltToggler() {
+    const toggler = make('div', [this.CSS.toggler]);
+    toggler.innerHTML = '<span class="alt">ALT</span><span class="caption">CAPTION</span>';
+    toggler.addEventListener('click', () => {
+      this.toggleCaptionAlt();
+    })
+
+    return toggler;
+  }
+
+  toggleCaptionAlt() {
+    this.nodes.captionAltWrapper.classList.toggle('show-alt');
   }
 
   /**
@@ -222,6 +252,16 @@ export default class Ui {
   fillCaption(text) {
     if (this.nodes.caption) {
       this.nodes.caption.innerHTML = text;
+    }
+  }
+
+  /**
+   * Shows alt input
+   * @param {string} text - alt text
+   */
+  fillAlt(text) {
+    if (this.nodes.alt) {
+      this.nodes.alt.innerHTML = text;
     }
   }
 
