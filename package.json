@@ -1,6 +1,6 @@
 {
-  "name": "@editorjs/image",
-  "version": "2.8.1",
+  "name": "editorjs-image-enhanced",
+  "version": "1.0.0",
   "keywords": [
     "codex editor",
     "tool",
@@ -8,9 +8,9 @@
     "editor.js",
     "editorjs"
   ],
-  "description": "Image Tool for Editor.js",
+  "description": "Enhanced Image Tool for Editor.js, fork of @editorjs/image",
   "license": "MIT",
-  "repository": "https://github.com/editor-js/image",
+  "repository": "https://github.com/mathieulesniak/editorjs-image-enhanced",
   "main": "./dist/bundle.js",
   "scripts": {
     "build": "webpack --mode production",
@@ -20,8 +20,8 @@
     "lint:fix": "eslint src/ --ext .js --fix"
   },
   "author": {
-    "name": "CodeX",
-    "email": "team@ifmo.su"
+    "name": "Mathieu LESNIAK",
+    "email": "mathieu@lesniak.fr"
   },
   "devDependencies": {
     "@babel/core": "^7.3.4",
