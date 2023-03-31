@@ -347,8 +347,10 @@ export default class Ui {
       }
     });
 
-    // FIXME: remove previous image when appending new child
-    // otherwise falsy image may be before real one
+    const previousImage = this.nodes.imageContainer.querySelector('img');
+    if (previousImage) {
+      this.nodes.imageContainer.removeChild(previousImage);
+    }
     this.nodes.imageContainer.appendChild(this.nodes.imageEl);
   }
 
