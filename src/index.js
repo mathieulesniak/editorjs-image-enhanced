@@ -46,7 +46,13 @@ import './index.css';
 import Ui from './ui';
 import Uploader from './uploader';
 
-import { IconAddBorder, IconStretch, IconAddBackground, IconPicture } from '@codexteam/icons';
+import { 
+  IconAddBorder,
+  IconStretch,
+  IconAddBackground,
+  IconPicture,
+  IconLink
+} from '@codexteam/icons';
 
 /**
  * @typedef {object} ImageConfig
@@ -60,7 +66,8 @@ import { IconAddBorder, IconStretch, IconAddBackground, IconPicture } from '@cod
  * @property {string} altPlaceholder - placeholder for alt field
  * @property {object} additionalRequestData - any data to send with requests
  * @property {object} additionalRequestHeaders - allows to pass custom headers with Request
- * @property {string} buttonContent - overrides for Select File button
+ * @property {string} uploadButtonContent - overrides for Select File button
+ * @property {string} embedButtonContent - overrides for Embed image button
  * @property {object} [uploader] - optional custom uploader
  * @property {function(File): Promise.<UploadResponseFormat>} [uploader.uploadByFile] - method that upload image by File
  * @property {function(string): Promise.<UploadResponseFormat>} [uploader.uploadByUrl] - method that upload image by URL
@@ -149,8 +156,9 @@ export default class ImageTool {
       types: config.types || 'image/*',
       captionPlaceholder: this.api.i18n.t(config.captionPlaceholder || 'Caption'),
       altPlaceholder: this.api.i18n.t(config.altPlaceholder || 'Alt'),
-      buttonContent: config.buttonContent || '',
+      uploadButtonContent: config.uploadButtonContent || '',
       uploader: config.uploader || undefined,
+      embedButtonContent: config.embedButtonContent || '',
       actions: config.actions || [],
     };
 
@@ -175,6 +183,12 @@ export default class ImageTool {
             this.ui.showPreloader(src);
           },
         });
+      },
+      onEmbedUrl: (url) => {
+        this.image = { url };
+      },
+      onSetLink: (url) => {
+        this.link = url;
       },
       readOnly,
     });
@@ -235,7 +249,16 @@ export default class ImageTool {
   renderSettings() {
     // Merge default tunes with the ones that might be added by user
     // @see https://github.com/editor-js/image/pull/49
-    const tunes = ImageTool.tunes.concat(this.config.actions);
+
+    // Add link tune setting here as default settings are static
+    const linkTuneSetting =  {
+      name: 'withLink',
+      icon: IconLink,
+      title: 'With link',
+      action: () => { this.ui.showLinkModal() },
+    };
+
+    const tunes = ImageTool.tunes.concat(linkTuneSetting, this.config.actions);
 
     return tunes.map(tune => ({
       icon: tune.icon,
@@ -253,16 +276,6 @@ export default class ImageTool {
         this.tuneToggled(tune.name);
       },
     }));
-  }
-
-  /**
-   * Fires after clicks on the Toolbox Image Icon
-   * Initiates click on the Select File button
-   *
-   * @public
-   */
-  appendCallback() {
-    this.ui.nodes.fileButton.click();
   }
 
   /**
@@ -355,13 +368,19 @@ export default class ImageTool {
 
     this._data.caption = data.caption || '';
     this._data.alt = data.alt || '';
+    this._data.link = data.link || '';
+    
     this.ui.fillCaption(this._data.caption);
     this.ui.fillAlt(this._data.alt);
+    this.ui.fillLink(this._data.link);
+    
     ImageTool.tunes.forEach(({ name: tune }) => {
       const value = typeof data[tune] !== 'undefined' ? data[tune] === true || data[tune] === 'true' : false;
 
       this.setTune(tune, value);
     });
+
+    this._data.withLink = this.data.link !== '';
   }
 
   /**
@@ -388,6 +407,18 @@ export default class ImageTool {
     if (file && file.url) {
       this.ui.fillImage(file.url);
     }
+  }
+
+  /**
+   * Set link image should points to
+   * 
+   * @private
+   * 
+   * @param {string} url - the link
+   */
+  set link(url) {
+    this._data.link = url || '';
+    this._data.withLink = url !== '';
   }
 
   /**

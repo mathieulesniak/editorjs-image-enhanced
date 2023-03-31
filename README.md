@@ -87,7 +87,8 @@ Image Tool supports these configuration parameters:
 | additionalRequestHeaders | `object` | Object with any custom headers which will be added to request. [See example](https://github.com/codex-team/ajax/blob/e5bc2a2391a18574c88b7ecd6508c29974c3e27f/README.md#headers-object) |
 | captionPlaceholder | `string` | (default: `Caption`) Placeholder for Caption input |
 | altPlaceholder | `string` | (default: `Alt`) Placeholder for Alt input |
-| buttonContent | `string` | Allows to override HTML content of «Select file» button |
+| uploadButtonContent | `string` | Allows to override HTML content of «Select file» button |
+| embedButtonContent | `string` | Allow to override HTML content of Embed image button |
 | uploader | `{{uploadByFile: function, uploadByUrl: function}}` | Optional custom uploading methods. See details below. |
 | actions | `array` | Array with custom actions to show in the tool's settings menu. See details below. |
 

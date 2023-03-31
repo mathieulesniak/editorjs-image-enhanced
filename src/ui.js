@@ -1,4 +1,4 @@
-import { IconPicture } from '@codexteam/icons';
+import { IconPicture, IconCross } from '@codexteam/icons';
 import { make } from './utils/dom';
 
 /**
@@ -13,17 +13,23 @@ export default class Ui {
    * @param {object} ui.api - Editor.js API
    * @param {ImageConfig} ui.config - user config
    * @param {Function} ui.onSelectFile - callback for clicks on Select file button
+   * @param {Function} ui.onEmbedUrl - callback when embedding an url
+   * @param {Function} ui.onSetLink - callback when setting a link on image
    * @param {boolean} ui.readOnly - read-only mode flag
    */
-  constructor({ api, config, onSelectFile, readOnly }) {
+  constructor({ api, config, onSelectFile, onEmbedUrl, onSetLink, readOnly }) {
     this.api = api;
     this.config = config;
     this.onSelectFile = onSelectFile;
+    this.onEmbedUrl = onEmbedUrl;
+    this.onSetLink = onSetLink;
+    this.link = '';
     this.readOnly = readOnly;
     this.nodes = {
       wrapper: make('div', [this.CSS.baseClass, this.CSS.wrapper]),
       imageContainer: make('div', [ this.CSS.imageContainer ]),
       fileButton: this.createFileButton(),
+      embedButton: this.createEmbedButton(),
       imageEl: undefined,
       imagePreloader: make('div', this.CSS.imagePreloader),
       captionAltWrapper: make('div', [this.CSS.captionAltWrapper]),
@@ -48,6 +54,7 @@ export default class Ui {
      *      <caption-alt-toggler />
      *    </caption-alt-wrapper>
      *    <select-file-button />
+     *    <embed-modal />
      *  </wrapper>
      */
     this.nodes.caption.dataset.placeholder = this.config.captionPlaceholder;
@@ -59,6 +66,7 @@ export default class Ui {
     this.nodes.captionAltWrapper.appendChild(this.nodes.alt);
     this.nodes.captionAltWrapper.appendChild(this.nodes.captionAltToggler);
     this.nodes.wrapper.appendChild(this.nodes.fileButton);
+    this.nodes.wrapper.appendChild(this.nodes.embedButton);
   }
 
   /**
@@ -83,7 +91,13 @@ export default class Ui {
       captionAltWrapper: 'image-tool__wrapper',
       caption: 'image-tool__wrapper-caption',
       alt: 'image-tool__wrapper-alt',
-      toggler: 'image-tool__wrapper-toggler'
+      toggler: 'image-tool__wrapper-toggler',
+      modal: 'image-tool__modal',
+      modalContainer: 'image-tool__modal-container',
+      modalTitle: 'image-tool__modal-container-title',
+      modalInputContainer: 'image-tool__modal-container__input-container',
+      modalInputCross: 'image-tool__modal-container__input-container-cross',
+      embedModal: 'image-tool__modal-embed'
     };
   };
 
@@ -127,13 +141,106 @@ export default class Ui {
   createFileButton() {
     const button = make('div', [ this.CSS.button ]);
 
-    button.innerHTML = this.config.buttonContent || `${IconPicture} ${this.api.i18n.t('Select an Image')}`;
+    button.innerHTML = this.config.uploadButtonContent || `${IconPicture} ${this.api.i18n.t('Select an Image')}`;
 
     button.addEventListener('click', () => {
       this.onSelectFile();
     });
 
     return button;
+  }
+
+  showLinkModal() {
+    /*
+    <title>
+    <input-container>
+      <input>
+      <input-empty>
+    </input-container>
+    */
+
+    const modalTitle = make('div', [ this.CSS.modalTitle ]);
+    modalTitle.innerHTML = this.api.i18n.t('Link');
+    const modal = this.createModal();
+    
+    // FIXME: CSS
+    const linkModal = make('div', [ this.CSS.modalContainer, this.CSS.embedModal ]);
+    linkModal.appendChild(modalTitle);
+
+    const modalInputContainer = make('div', [this.CSS.modalInputContainer]);
+    const modalInput = make('input', [this.CSS.input], {type: 'text', value: this.link});
+    const modalInputCross = make('div', [this.CSS.modalInputCross]);
+    modalInputCross.innerHTML = IconCross;
+    modalInputCross.addEventListener('click', () => {
+      modalInput.value = '';
+      this.link = '';
+      this.onSetLink('');
+    });
+
+    // Submit link on Enter
+    modalInput.addEventListener('keyup', (event) => {
+      if (event.key === 'Enter') {
+          this.link = modalInput.value;
+          this.onSetLink(modalInput.value);
+          this.removeModal(modal);
+      }
+    });
+
+    modalInputContainer.appendChild(modalInput);
+    modalInputContainer.appendChild(modalInputCross);
+
+    linkModal.appendChild(modalInputContainer);
+    modal.appendChild(linkModal);
+    document.body.appendChild(modal);
+    modalInput.focus();
+  }
+
+  
+
+  createEmbedButton() {
+    const button = make('div', [ this.CSS.button ]);
+    button.innerHTML = this.config.embedButtonContent || `${IconPicture} ${this.api.i18n.t('Embed an Image')}`;
+
+    button.addEventListener('click', () => {
+      this.showEmbedModal();
+    })
+    return button;
+  }
+
+  showEmbedModal() {
+    const modalTitle = make('div', [ this.CSS.modalTitle ]);
+    modalTitle.innerHTML = this.api.i18n.t('Embed an Image');
+    const modal = this.createModal();
+    const embedModal = make('div', [ this.CSS.modalContainer, this.CSS.embedModal ]);
+    embedModal.appendChild(modalTitle);
+
+    const modalInput = make('input', [this.CSS.input], { type: 'text' });
+
+    // Submit link on Enter
+    modalInput.addEventListener('keyup', (event) => {
+      if (event.key === 'Enter') {
+        this.onEmbedUrl(modalInput.value);
+        this.removeModal(modal);
+      }
+    });
+    embedModal.appendChild(modalInput);
+    modal.appendChild(embedModal);
+    document.body.appendChild(modal);
+    modalInput.focus();
+  }
+
+  createModal() {
+    const modal = make('div', [ this.CSS.modal ]);
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        this.removeModal(modal);
+      }
+    })
+    return modal
+  }
+
+  removeModal(modal) {
+    document.body.removeChild(modal);
   }
 
   createCaptionAltToggler() {
@@ -240,6 +347,10 @@ export default class Ui {
       }
     });
 
+    const previousImage = this.nodes.imageContainer.querySelector('img');
+    if (previousImage) {
+      this.nodes.imageContainer.removeChild(previousImage);
+    }
     this.nodes.imageContainer.appendChild(this.nodes.imageEl);
   }
 
@@ -263,6 +374,11 @@ export default class Ui {
     if (this.nodes.alt) {
       this.nodes.alt.innerHTML = text;
     }
+  }
+
+  fillLink(url) {
+    
+    this.link = url !== undefined ? url : '';
   }
 
   /**

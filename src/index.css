@@ -124,7 +124,7 @@
 
   &--empty,
   &--loading {
-    ^&__caption {
+    .image-tool__wrapper {
       display: none;
     }
   }
@@ -166,6 +166,63 @@
 
     .cdx-button {
       display: none;
+    }
+  }
+
+  &__modal {
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0, 0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    &-container {
+      background: #fff;
+      margin: 16px;
+      border-radius: 6px;
+      padding: 16px;
+      width: 100%;
+      border: solid 1px #e8e8eb;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      
+      &-title {
+        padding-bottom: 4px;
+        border-bottom: solid 1px #e8e8eb;
+        font-size: 16px;
+        font-weight: bold;
+      }
+
+      &__input-container {
+        position: relative;
+
+        input {
+          padding-right: 32px;
+        }
+        
+        &-cross {
+          position: absolute;
+          right: 8px;
+          top: 0;
+          bottom: 0;
+          display:flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+        }
+
+      }
+    }
+    
+    &-embed {
+      max-width: 500px;
     }
   }
 
