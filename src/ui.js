@@ -304,12 +304,14 @@ export default class Ui {
 
   debounceUnsplashSearch(text, DOMrecipient) {
     clearTimeout(this.unsplashTimer);
+    DOMrecipient.innerHTML = '<div class="image-tool__image-preloader"></div>';
     this.unsplashTimer = setTimeout(() => {
       this.doUnsplashSearch(text, 1, DOMrecipient);
     }, 1000);
   }
 
   doUnsplashSearch(text, page, DOMrecipient) {
+    DOMrecipient.innerHTML = '<div class="image-tool__image-preloader"></div>';
     this.unsplashClient.search(text, page, (images) => {
       this.addUnsplashImagesToResults(images, DOMrecipient); 
     });
@@ -341,6 +343,9 @@ export default class Ui {
           innerHTML: `Next ${IconChevronRight}`,
           onclick: () => { this.doUnsplashSearch(resultset.query, resultset.next_page, DOMrecipient); }})
         paginationContainer.appendChild(previous);
+      } else {
+        const next = make('div');
+        paginationContainer.appendChild(next);
       }
       DOMrecipient.appendChild(paginationContainer);
       const gallery = make('div', [this.CSS.unsplashGallery]);
@@ -512,7 +517,6 @@ export default class Ui {
   }
 
   fillLink(url) {
-    
     this.link = url !== undefined ? url : '';
   }
 
