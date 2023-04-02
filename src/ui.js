@@ -1,5 +1,11 @@
-import { IconPicture, IconCross } from '@codexteam/icons';
+import { 
+  IconPicture,
+  IconCross,
+  IconChevronLeft,
+  IconChevronRight
+} from '@codexteam/icons';
 import { make } from './utils/dom';
+import UnsplashClient from './utils/unsplashClient';
 
 /**
  * Class for working with UI:
@@ -25,11 +31,15 @@ export default class Ui {
     this.onSetLink = onSetLink;
     this.link = '';
     this.readOnly = readOnly;
+    this.unsplashClient = new UnsplashClient(this.config.unsplash);
+    this.unsplashTimer = null;
     this.nodes = {
       wrapper: make('div', [this.CSS.baseClass, this.CSS.wrapper]),
       imageContainer: make('div', [ this.CSS.imageContainer ]),
+      buttonsWrapper: make('div', [ this.CSS.buttonsWrapper ]),
       fileButton: this.createFileButton(),
       embedButton: this.createEmbedButton(),
+      unsplashButton: this.createUnsplashButton(),
       imageEl: undefined,
       imagePreloader: make('div', this.CSS.imagePreloader),
       captionAltWrapper: make('div', [this.CSS.captionAltWrapper]),
@@ -65,8 +75,12 @@ export default class Ui {
     this.nodes.captionAltWrapper.appendChild(this.nodes.caption);
     this.nodes.captionAltWrapper.appendChild(this.nodes.alt);
     this.nodes.captionAltWrapper.appendChild(this.nodes.captionAltToggler);
-    this.nodes.wrapper.appendChild(this.nodes.fileButton);
-    this.nodes.wrapper.appendChild(this.nodes.embedButton);
+    
+    this.nodes.wrapper.appendChild(this.nodes.buttonsWrapper);
+    this.nodes.buttonsWrapper.appendChild(this.nodes.fileButton);
+    this.nodes.buttonsWrapper.appendChild(this.nodes.embedButton);
+    this.nodes.buttonsWrapper.appendChild(this.nodes.unsplashButton);
+    
   }
 
   /**
@@ -92,12 +106,19 @@ export default class Ui {
       caption: 'image-tool__wrapper-caption',
       alt: 'image-tool__wrapper-alt',
       toggler: 'image-tool__wrapper-toggler',
+      buttonsWrapper: 'image-tool__button-wrapper',
       modal: 'image-tool__modal',
       modalContainer: 'image-tool__modal-container',
       modalTitle: 'image-tool__modal-container-title',
       modalInputContainer: 'image-tool__modal-container__input-container',
       modalInputCross: 'image-tool__modal-container__input-container-cross',
-      embedModal: 'image-tool__modal-embed'
+      embedModal: 'image-tool__modal-embed',
+      unsplashModal: 'image-tool__modal-unsplash',
+      unsplashGallery: 'image-tool__modal-unsplash__gallery',
+      unsplashGalleryPagination: 'image-tool__modal-unsplash__gallery__pagination',
+      unsplashGalleryPaginationButton: 'image-tool__modal-unsplash__gallery__pagination__button',
+      unsplashGalleryColumn: 'image-tool__modal-unsplash__gallery__column',
+      unsplashGalleryThumbnail: 'image-tool__modal-unsplash__gallery__thumb'
     };
   };
 
@@ -195,8 +216,6 @@ export default class Ui {
     modalInput.focus();
   }
 
-  
-
   createEmbedButton() {
     const button = make('div', [ this.CSS.button ]);
     button.innerHTML = this.config.embedButtonContent || `${IconPicture} ${this.api.i18n.t('Embed an Image')}`;
@@ -241,6 +260,127 @@ export default class Ui {
 
   removeModal(modal) {
     document.body.removeChild(modal);
+  }
+
+  createUnsplashButton() {
+    const button = make('div', [ this.CSS.button ]);
+    button.innerHTML = this.config.unsplash.buttonContent || `${IconPicture} ${this.api.i18n.t('Embed an Image from Unsplash')}`;
+
+    button.addEventListener('click', () => {
+      this.showUnsplashModal();
+    })
+    return button;
+  }
+
+  showUnsplashModal() {
+    /*
+    <title>
+    <input>
+    <resultset>
+    */
+
+    const modalTitle = make('div', [ this.CSS.modalTitle ]);
+
+    modalTitle.innerHTML = this.api.i18n.t('Unsplash');
+    const modal = this.createModal();
+    const unsplashModal = make('div', [ this.CSS.modalContainer, this.CSS.unsplashModal ]); // FIXME: CSS unsplashModal
+    unsplashModal.appendChild(modalTitle);
+
+    const inputPlaceholder = this.config.unsplash.inputPlaceholder || this.api.i18n.t('Search keyword on Unsplash');
+    const modalInput = make('input', [this.CSS.input], { type: 'text', placeholder: inputPlaceholder });
+    const modalResultset = make('div');
+    
+    modalInput.addEventListener('input', (event) => {
+      this.debounceUnsplashSearch(event.target.value, modalResultset)
+    });
+    
+    unsplashModal.appendChild(modalInput);
+    unsplashModal.appendChild(modalResultset);
+    modal.appendChild(unsplashModal);
+
+    document.body.appendChild(modal);
+    modalInput.focus();
+  }
+
+  debounceUnsplashSearch(text, DOMrecipient) {
+    clearTimeout(this.unsplashTimer);
+    DOMrecipient.innerHTML = '<div class="image-tool__image-preloader"></div>';
+    this.unsplashTimer = setTimeout(() => {
+      this.doUnsplashSearch(text, 1, DOMrecipient);
+    }, 1000);
+  }
+
+  doUnsplashSearch(text, page, DOMrecipient) {
+    DOMrecipient.innerHTML = '<div class="image-tool__image-preloader"></div>';
+    this.unsplashClient.search(text, page, (images) => {
+      this.addUnsplashImagesToResults(images, DOMrecipient); 
+    });
+  }
+
+  addUnsplashImagesToResults(resultset, DOMrecipient) {
+    DOMrecipient.innerHTML = '';
+    if (resultset.results && resultset.results.length) {
+      const paginationContainer = make('div', this.CSS.unsplashGalleryPagination);
+      
+      if (resultset.previous_page !== null) {
+        const previous = make('div', this.CSS.unsplashGalleryPaginationButton, {
+          innerHTML: `${IconChevronLeft} Previous`,
+          onclick: () => { this.doUnsplashSearch(resultset.query, resultset.previous_page, DOMrecipient); }})
+        paginationContainer.appendChild(previous);
+      } else {
+        const previous = make('div');
+        paginationContainer.appendChild(previous);
+      }
+
+
+      const paginationText = make('div', '', {
+        innerHTML: `Page ${resultset.page} / ${resultset.total_pages}`
+      });
+      paginationContainer.appendChild(paginationText);
+      
+      if (resultset.next_page !== null) {
+        const previous = make('div', this.CSS.unsplashGalleryPaginationButton, {
+          innerHTML: `Next ${IconChevronRight}`,
+          onclick: () => { this.doUnsplashSearch(resultset.query, resultset.next_page, DOMrecipient); }})
+        paginationContainer.appendChild(previous);
+      } else {
+        const next = make('div');
+        paginationContainer.appendChild(next);
+      }
+      DOMrecipient.appendChild(paginationContainer);
+      const gallery = make('div', [this.CSS.unsplashGallery]);
+      DOMrecipient.appendChild(gallery);
+
+      // Create 3 columns
+      const columnsArray = [];
+      for (let i = 0; i < 3; i++) {
+        const column = make('div', this.CSS.unsplashGalleryColumn);
+        columnsArray.push(column);
+        gallery.appendChild(column);
+      }
+
+      resultset.results.forEach((image, offset) => {
+        const img = make('img', null, {
+          src: image.thumb,
+          onclick: () => this.downloadUnsplashImage(image),
+        });
+        const thumbnail = make('div', this.CSS.unsplashGalleryThumbnail);
+        thumbnail.appendChild(img);
+        columnsArray[offset % 3].appendChild(thumbnail);
+      });
+    } else {
+      const noResults = make('div', null, {
+        innerHTML: 'No images found',
+      });
+      DOMrecipient.appendChild(noResults);
+    }
+  }
+  
+  downloadUnsplashImage(image) {
+    this.onEmbedUrl(image.url);
+    this.fillCaption(image.attribution);
+    this.unsplashClient.download(image.download_location);
+    this.removeModal(document.querySelector(`.${this.CSS.modal}`));
   }
 
   createCaptionAltToggler() {
@@ -377,7 +517,6 @@ export default class Ui {
   }
 
   fillLink(url) {
-    
     this.link = url !== undefined ? url : '';
   }
 

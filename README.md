@@ -65,6 +65,10 @@ var editor = EditorJS({
         endpoints: {
           byFile: 'http://localhost:8008/uploadFile', // Your backend file uploader endpoint
           byUrl: 'http://localhost:8008/fetchUrl', // Your endpoint that provides uploading by Url
+        },
+        unsplash: {
+          appName: 'your_app_name',
+          clientId: 'your_client_id'
         }
       }
     }
@@ -89,8 +93,9 @@ Image Tool supports these configuration parameters:
 | altPlaceholder | `string` | (default: `Alt`) Placeholder for Alt input |
 | uploadButtonContent | `string` | Allows to override HTML content of «Select file» button |
 | embedButtonContent | `string` | Allow to override HTML content of Embed image button |
-| uploader | `{{uploadByFile: function, uploadByUrl: function}}` | Optional custom uploading methods. See details below. |
+| uploader | `{ uploadByFile: function, uploadByUrl: function }` | Optional custom uploading methods. See details below. |
 | actions | `array` | Array with custom actions to show in the tool's settings menu. See details below. |
+| unsplash | `{ appName: string, clientId: string, maxResults: string, buttonContent: string, inputPlaceholder: string }` | Config for Unsplash API. Contains 3 fields:<br/>**appName:** Unsplash Application Name.<br/>**clientId**: Unsplash Access Key.<br/>**maxResults**: Max number of images per search (default 40).<br/>**buttonContent**: Allows to override HTML content of Unsplash image button.<br/>**inputPlaceholder**: Allows to override Unsplash modal search input placeholder. |
 
 Note that if you don't implement your custom uploader methods, the `endpoints` param is required.
 

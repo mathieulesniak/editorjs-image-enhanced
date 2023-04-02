@@ -160,6 +160,7 @@ export default class ImageTool {
       uploader: config.uploader || undefined,
       embedButtonContent: config.embedButtonContent || '',
       actions: config.actions || [],
+      unsplash : config.unsplash || {},
     };
 
     /**
