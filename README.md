@@ -93,10 +93,9 @@ Image Tool supports these configuration parameters:
 | altPlaceholder | `string` | (default: `Alt`) Placeholder for Alt input |
 | uploadButtonContent | `string` | Allows to override HTML content of «Select file» button |
 | embedButtonContent | `string` | Allow to override HTML content of Embed image button |
-| unsplashButtonContent | `string` | Allow to override HTML content of Unsplash image button |
 | uploader | `{ uploadByFile: function, uploadByUrl: function }` | Optional custom uploading methods. See details below. |
 | actions | `array` | Array with custom actions to show in the tool's settings menu. See details below. |
-| unsplash | `{ appName: string, clientId: string, maxResults: string }` | Config for Unsplash API. Contains 3 fields:<br/>**appName:** Unsplash Application Name.<br/>**clientId**: Unsplash Access Key.<br/>**maxResults**: Max number of images per search (default 40). |
+| unsplash | `{ appName: string, clientId: string, maxResults: string, buttonContent: string, inputPlaceholder: string }` | Config for Unsplash API. Contains 3 fields:<br/>**appName:** Unsplash Application Name.<br/>**clientId**: Unsplash Access Key.<br/>**maxResults**: Max number of images per search (default 40).<br/>**buttonContent**: Allows to override HTML content of Unsplash image button.<br/>**inputPlaceholder**: Allows to override Unsplash modal search input placeholder. |
 
 Note that if you don't implement your custom uploader methods, the `endpoints` param is required.
 
